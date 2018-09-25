@@ -35,7 +35,7 @@ services:
     #   - zookeeper
     #   - kafka
     # NOTE: the command should be updated
-    command: python
+    command: flask run --host=0.0.0.0
     volumes:
       - ../:/opt/orimon
     networks:

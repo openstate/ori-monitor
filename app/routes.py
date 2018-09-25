@@ -9,7 +9,7 @@ from app import app, ORIMonitorError
 
 @app.route("/")
 def index():
-    return jsonify(app.config)
+    return jsonify({})
 
 
 if __name__ == "__main__":
