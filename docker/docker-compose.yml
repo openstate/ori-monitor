@@ -1,0 +1,55 @@
+version: "3.1"
+services:
+  # mysql:
+  #   image: mysql:5.7.21
+  #   # This root password will be overwritten with the password used in
+  #   # the backup that will be restored from a .sql file in the
+  #   # docker-entrypoint-initdb.d directory.
+  #   environment:
+  #     - MYSQL_DATABASE=orimon
+  #     - MYSQL_ROOT_PASSWORD=test
+  #   networks:
+  #     - orimon
+  #   volumes:
+  #     - orimon-mysql-volume:/var/lib/mysql
+  #     - "./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+  #   restart: always
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-app
+    volumes:
+      - ../:/opt/orimon
+    networks:
+      - orimon
+      - nginx-load-balancer
+    restart: always
+    command: flask run --host=0.0.0.0
+    ports:
+      - "5000:5000"
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-app
+    # depends_on:
+    #   - zookeeper
+    #   - kafka
+    # NOTE: the command should be updated
+    command: python
+    volumes:
+      - ../:/opt/orimon
+    networks:
+      - orimon
+    restart: always
+networks:
+  orimon:
+  nginx-load-balancer:
+    external:
+      name: docker_nginx-load-balancer
+# volumes:
+#   esdata:
+#     driver: local
+#   redisdata:
+#     driver: local
+#   binoas-mysql-volume:
+#     driver: local
