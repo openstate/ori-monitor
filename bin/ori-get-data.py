@@ -65,7 +65,7 @@ def output_dates(g, dates):
             writer.writerow([dt, c])
 
 
-def predict(g):
+def predict(g, prediction_days_past):
     dates_path = './%s.csv' % (get_government_slug(g),)
     dt_today = datetime.datetime.today().date()
     df = pd.read_csv(dates_path)
@@ -85,7 +85,7 @@ def predict(g):
     # preview our data -- note that Prophet is only showing future dates (not
     # values), as we need to call the prediction method still
     forecast = m.predict(future)
-    start_date = str(dt_today)
+    start_date = str(dt_today - datetime.timedelta(days=prediction_days_past))
     mask = (forecast['ds'] > start_date)
     forecast = forecast.loc[mask]
 
@@ -95,11 +95,15 @@ def predict(g):
 
 
 def main(argv):
+    if len(argv) > 1:
+        prediction_days_past = int(argv[1])
+    else:
+        prediction_days_past = 0
     for g in get_governments()['organizations']:
         print(get_government_slug(g))
         dates = get_dates_for_government(g)
         output_dates(g, dates)
-        predict(g)
+        predict(g, prediction_days_past)
         sleep(1)
     return 0
 
