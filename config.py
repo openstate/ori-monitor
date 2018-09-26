@@ -20,3 +20,4 @@ class Config(object):
 
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:test@binoas_mysql_1:3306/binoas'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    ORI_API_URL = 'https://api.openraadsinformatie.nl/v0'
