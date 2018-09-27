@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import csv
 import json
@@ -73,7 +74,7 @@ def predict(g, prediction_days_past):
     df['ds'] = pd.to_datetime(df['ds'])
     # filtering here on >=1995, just to pull the last ~20 years of production
     # information
-    start_date = str(dt_today - datetime.timedelta(days=365))
+    start_date = str(dt_today - datetime.timedelta(days=720))
     mask = (df['ds'] > start_date)
     df = df.loc[mask]
     # initialize Prophet
@@ -94,6 +95,28 @@ def predict(g, prediction_days_past):
         datespredict_path)
 
 
+def compare_to_prediction(g, dates, prediction_days_past):
+    datespredict_path = './prediction_%s.csv' % (get_government_slug(g),)
+
+    if not os.path.exists(datespredict_path):
+        print("Prediction file %s did not exist -- not doing comparison" % (
+            datespredict_path,))
+        return
+
+    df = pd.read_csv(datespredict_path)
+    # ensure our ds value is truly datetime
+    df['ds'] = pd.to_datetime(df['ds'])
+    predicted = {str(d['ds'])[0:10]: d['yhat'] for idx, d in df.iterrows()}
+    dt_today = datetime.datetime.today().date()
+    dt = str(dt_today - datetime.timedelta(days=prediction_days_past))
+
+    print(dt)
+    if dt not in predicted:
+        return
+
+    print("Predicted: %s, actual %s" % (predicted[dt], dates[dt],))
+
+
 def main(argv):
     if len(argv) > 1:
         prediction_days_past = int(argv[1])
@@ -102,6 +125,7 @@ def main(argv):
     for g in get_governments()['organizations']:
         print(get_government_slug(g))
         dates = get_dates_for_government(g)
+        compare_to_prediction(g, dates, prediction_days_past)
         output_dates(g, dates)
         predict(g, prediction_days_past)
         sleep(1)
